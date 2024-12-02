@@ -26,24 +26,30 @@ class StudentManagementActivity : AppCompatActivity() {
             findViewById<CheckBox>(R.id.hobby3)
         )
         val addButton = findViewById<Button>(R.id.addButton)
-        val nameForm = findViewById<EditText>(R.id.editName)
+        val nameForm = findViewById<EditText>(R.id.nameEdit)
         val studentList = findViewById<ListView>(R.id.studentList)
 
         // Insert example
         addButton.setOnClickListener {
             val selectedGender = findViewById<RadioButton>(genderGroup.checkedRadioButtonId)?.text
             val selectedHobbies = hobbies.filter { it.isChecked }.joinToString(", ") { it.text }
-            val selectedName = nameForm.text.toString() // Get the name from the EditText
+            val selectedName = nameForm.text.toString().trim()
+
+            if (selectedName.isEmpty() || selectedGender == null) {
+                Toast.makeText(this, "Please fill out all fields", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
             val db = dbHelper.writableDatabase
             val values = ContentValues().apply {
-                put("name", selectedName)  // Add the name value here
+                put("name", selectedName)
                 put("gender", selectedGender.toString())
                 put("hobbies", selectedHobbies)
             }
 
             db.insert("students", null, values)
             Toast.makeText(this, "Data Added", Toast.LENGTH_SHORT).show()
+            loadStudents(studentList)  // Refresh list after adding
         }
 
         // Load existing students
@@ -76,55 +82,43 @@ class StudentManagementActivity : AppCompatActivity() {
                 val updateButton = view.findViewById<Button>(R.id.updateButton)
                 val deleteButton = view.findViewById<Button>(R.id.deleteButton)
 
-                studentInfo.text = "Name: ${student["name"]},Gender: ${student["gender"]}, Hobbies: ${student["hobbies"]}"
+                studentInfo.text = "Name: ${student["name"]}, Gender: ${student["gender"]}, Hobbies: ${student["hobbies"]}"
 
                 updateButton.setOnClickListener {
-                    // Get current student data
                     val studentId = student["id"] as Int
                     val currentName = student["name"] as String
                     val currentGender = student["gender"] as String
                     val currentHobbies = student["hobbies"] as String
 
-                    // Create an AlertDialog to allow the user to update gender and hobbies
                     val builder = AlertDialog.Builder(this@StudentManagementActivity)
                     builder.setTitle("Update Student Data")
 
-                    // Create a layout for the dialog
                     val dialogLayout = layoutInflater.inflate(R.layout.dialog_update_student, null)
-
-                    // Get references to the input fields
                     val nameEditText = dialogLayout.findViewById<EditText>(R.id.editName)
                     val genderEditText = dialogLayout.findViewById<EditText>(R.id.editGender)
                     val hobbiesEditText = dialogLayout.findViewById<EditText>(R.id.editHobbies)
 
-                    // Pre-fill the fields with current data
                     nameEditText.setText(currentName)
                     genderEditText.setText(currentGender)
                     hobbiesEditText.setText(currentHobbies)
 
-                    // Set the dialog view
                     builder.setView(dialogLayout)
 
                     builder.setPositiveButton("Update") { _, _ ->
-                        // Get the new input from the dialog
                         val newName = nameEditText.text.toString()
                         val newGender = genderEditText.text.toString()
                         val newHobbies = hobbiesEditText.text.toString()
 
-                        // Update the student data in the database
                         dbHelper.updateStudent(studentId, newName, newGender, newHobbies)
-                        loadStudents(listView)  // Refresh the list
+                        loadStudents(listView)
                         Toast.makeText(this@StudentManagementActivity, "Data Updated", Toast.LENGTH_SHORT).show()
                     }
 
                     builder.setNegativeButton("Cancel", null)
-
                     builder.create().show()
                 }
 
-
                 deleteButton.setOnClickListener {
-                    // Delete logic here
                     val studentId = student["id"] as Int
                     dbHelper.deleteStudent(studentId)
                     loadStudents(listView)
