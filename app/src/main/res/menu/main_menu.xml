@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_profil"
+        android:title="Profil Fase F PPLG" />
+    <item
+        android:id="@+id/menu_struktur"
+        android:title="Struktur Organisasi" />
+    <item
+        android:id="@+id/menu_kelola"
+        android:title="Kelola Data Siswa" />
+    <item
+        android:id="@+id/menu_keluar"
+        android:title="Keluar" />
+</menu>
